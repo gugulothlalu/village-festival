@@ -93,6 +93,25 @@ const getFestivalImageStoragePath = (imageUrl) => {
 ========================================================= */
 
 function App() {
+     // Record a visit when the app opens
+  useEffect(() => {
+    let visitorId = localStorage.getItem("fc_visitor_id");
+
+    if (!visitorId) {
+      visitorId = crypto.randomUUID();
+      localStorage.setItem("fc_visitor_id", visitorId);
+    }
+
+    supabase
+      .from("usage_events")
+      .insert({
+        event_name: "page_view",
+        visitor_id: visitorId,
+      })
+      .then(({ error }) => {
+        if (error) console.error("Visit tracking failed:", error.message);
+      });
+  }, []);
   /* =======================================================
      AUTH
   ======================================================= */
