@@ -1922,23 +1922,7 @@ if (usageError) {
               <span className="detail-small-label">
                 🪔 Festival Details
               </span>
-              <button
-                type="button"
-                className="small-primary-btn"
-                style={{ marginTop: "10px" }}
-                onClick={() => {
-                  setEditingFestivalId(festival.id);
-                  setFestivalName(festival.name || "");
-                  setFestivalYear(String(festival.year || new Date().getFullYear()));
-                  setFestivalDate(parseDate(festival.date));
-                  setFestivalDescription(festival.description || "");
-                  setFestivalPhoto(null);
-                  setFestivalPhotoPreview("");
-                  setShowFestivalForm(true);
-                }}
-              >
-                Edit Festival Details
-              </button>
+              
 
               <h1>{festival.name}</h1>
 
@@ -1953,6 +1937,24 @@ if (usageError) {
                   {festival.description}
                 </div>
               )}
+
+              <button
+                type="button"
+                className="small-primary-btn"
+                style={{ marginTop: "8px", padding: "6px 12px", fontSize: "13px" }}
+                onClick={() => {
+                  setEditingFestivalId(festival.id);
+                  setFestivalName(festival.name || "");
+                  setFestivalYear(String(festival.year || new Date().getFullYear()));
+                  setFestivalDate(parseDate(festival.date));
+                  setFestivalDescription(festival.description || "");
+                  setFestivalPhoto(null);
+                  setFestivalPhotoPreview("");
+                  setShowFestivalForm(true);
+                }}
+              >
+                Edit
+              </button>
             </div>
 
             <div className="detail-cover-photo-wrap">
