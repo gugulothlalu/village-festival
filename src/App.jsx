@@ -758,6 +758,16 @@ function App() {
 
         throw new Error("Village name does not match this account.");
       }
+       const { error: usageError } = await supabase
+  .from("usage_events")
+  .insert({
+    event_name: "login_success",
+    village_profile_id: data.user.id,
+  });
+
+if (usageError) {
+  console.error("Login analytics error:", usageError.message);
+}
 
       setAuthUser(data.user);
       setIsLoggedIn(true);
