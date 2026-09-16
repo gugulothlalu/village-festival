@@ -93,25 +93,6 @@ const getFestivalImageStoragePath = (imageUrl) => {
 ========================================================= */
 
 function App() {
-     // Record a visit when the app opens
-  useEffect(() => {
-    let visitorId = localStorage.getItem("fc_visitor_id");
-
-    if (!visitorId) {
-      visitorId = crypto.randomUUID();
-      localStorage.setItem("fc_visitor_id", visitorId);
-    }
-
-    supabase
-      .from("usage_events")
-      .insert({
-        event_name: "page_view",
-        visitor_id: visitorId,
-      })
-      .then(({ error }) => {
-        if (error) console.error("Visit tracking failed:", error.message);
-      });
-  }, []);
   /* =======================================================
      AUTH
   ======================================================= */
@@ -132,6 +113,8 @@ function App() {
   const [analyticsPeriod, setAnalyticsPeriod] = useState("daily");
   
   const [villageName, setVillageName] = useState("");
+  const [editingVillageName, setEditingVillageName] = useState(false);
+  const [villageNameDraft, setVillageNameDraft] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
 
   const [pin, setPin] = useState("");
@@ -797,6 +780,37 @@ function App() {
       alert(message);
     } finally {
       setAuthSubmitting(false);
+    }
+  };
+
+  const handleSaveVillageName = async () => {
+    const clean = villageNameDraft.trim();
+    if (!clean || !authUser?.id) return alert("Enter a village name.");
+    const { error } = await supabase.from("village_profiles")
+      .update({ village_name: clean }).eq("id", authUser.id);
+    if (error) return alert(error.message);
+    setVillageName(clean);
+    setEditingVillageName(false);
+    alert("Village name updated.");
+  };
+
+  const handleDeleteFestival = async (festival) => {
+    if (!authUser?.id) return;
+    if (!window.confirm(`Delete "${festival.name}" and its collections and expenses?`)) return;
+    try {
+      for (const table of ["collections", "expenses", "distributions", "memories"]) {
+        const { error } = await supabase.from(table).delete()
+          .eq("festival_id", festival.id).eq("user_id", authUser.id);
+        if (error) throw error;
+      }
+      const { error } = await supabase.from("festivals").delete()
+        .eq("id", festival.id).eq("user_id", authUser.id);
+      if (error) throw error;
+      setFestivals(prev => prev.filter(item => item.id !== festival.id));
+      if (selectedFestival?.id === festival.id) setSelectedFestival(null);
+      alert("Festival and its linked records deleted.");
+    } catch (error) {
+      alert(`Could not delete festival: ${error.message}`);
     }
   };
 
@@ -2918,6 +2932,17 @@ function App() {
             <h1>Welcome, {villageName}</h1>
 
             <p>Manage your village festival records</p>
+            {editingVillageName ? (
+              <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:8}}>
+                <input aria-label="Village name" value={villageNameDraft}
+                  onChange={e=>setVillageNameDraft(e.target.value)} />
+                <button className="primary-btn" type="button" onClick={handleSaveVillageName}>Save</button>
+                <button className="secondary-btn" type="button" onClick={()=>setEditingVillageName(false)}>Cancel</button>
+              </div>
+            ) : (
+              <button className="secondary-btn" type="button" style={{marginTop:8}}
+                onClick={()=>{setVillageNameDraft(villageName);setEditingVillageName(true);}}>Edit village name</button>
+            )}
           </div>
 
           <div
@@ -3213,14 +3238,12 @@ function App() {
                       </strong>
                     </div>
 
-                    <button
-                      className="view-btn"
-                      onClick={() =>
-                        setSelectedFestival(festival)
-                      }
-                    >
-                      View
-                    </button>
+                    <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                      <button type="button" className="view-btn"
+                        onClick={() => setSelectedFestival(festival)}>View</button>
+                      <button type="button" className="secondary-btn"
+                        onClick={() => handleDeleteFestival(festival)}>Delete</button>
+                    </div>
                   </div>
                 );
               })}
