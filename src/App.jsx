@@ -2970,10 +2970,6 @@ if (usageError) {
               + Add Festival
             </button>
 
-            <button className="secondary-btn" type="button" onClick={() => { setShowAppUsage(true); loadPublicAnalytics(); }}>
-              📊 App Usage
-            </button>
-
             <button className="secondary-btn" type="button" onClick={handleLogout}>
               Logout
             </button>
